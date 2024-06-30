@@ -5,3 +5,11 @@
 .vscode/ipch
 
 fail.cpp
+
+baseAudio.cpp
+fft.cpp
+sendData.cpp
+
+test
+include
+.vscode
