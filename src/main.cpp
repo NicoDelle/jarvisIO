@@ -1,35 +1,55 @@
-#include <Arduino.h>
-#include <PDM.h>
-#include "featureProvider.h"
-#include <time.h>
+#include <ArduTFLite.h>
+#include "model.h"
+#include "hcData.h"
 
-// PDM variables
-static const char channels = 1;
-short sampleBuffer[512];
-volatile int samplesRead;
+#define SAMPLE_RATE 8000
+#define SPECTROGRAM_ROWS 64
+#define SPECTROGRAM_COLS 16
 
-void onPDMdata()
-{
-  int bytesAvailable = PDM.available();
-  PDM.read(sampleBuffer, bytesAvailable);
-  samplesRead = bytesAvailable / sizeof(short);
-}
+#define FEATURE FTuk037
+
+constexpr int kTensorArenaSize = 16 * 1024;
+alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
 void setup()
 {
+  // Initialize serial communications and wait for Serial Monitor to be opened
   Serial.begin(9600);
   while (!Serial)
     ;
 
-  // PDM setup
-  PDM.onReceive(onPDMdata);
-  PDM.begin(channels, SAMPLE_RATE);
+  Serial.println("Initializing TensorFlow Lite Micro Interpreter...");
+  if (!modelInit(jarvis0_1_tflite, tensor_arena, kTensorArenaSize))
+  {
+    Serial.println("Model initialization failed!");
+    while (true)
+      ;
+  } 
+
+  int counter = 0;
+  for (int i = 0; i < 64; i++)
+  {
+    for (int j = 0; j < 16; j++)
+    {
+      modelSetInput(FEATURE[i][j], counter++);
+    }
+  }
+
+  Serial.println("Model initialization done.");
 }
 
 void loop()
 {
-  float feature[40][43];
-  int timeTaken;
-  timeTaken = getFeature(feature, sampleBuffer, &samplesRead); //takes 1.6s to run: need to cut off AT LEAST 600ms 
-  Serial.println(timeTaken);
+  if (!modelRunInference())
+  {
+    Serial.println("RunInference Failed!");
+    return;
+  }
+
+  // The expected prediction is 0.36
+  float y = modelGetOutput(0);
+  Serial.println(y);
+  while (1 == 1)
+  {
+  }
 }

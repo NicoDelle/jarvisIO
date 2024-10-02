@@ -43,15 +43,15 @@ void getFeatureRow(float *vMagnitude, float averagedBuckets[FEATURE_COLUMNS])
     averagedBuckets[FEATURE_COLUMNS - 1] = sum / remainingBuckets;
 }
 
-void getSlice(float slice[SLICE_SIZE], short sampleBuffer[512], volatile int *samplesRead)
+void getSlice(float slice[SLICE_SIZE], short sampleBuffer[512], volatile int *samplesRead)//none of the operations individuallly take a large amount of time, but the function as a whole takes 21ms to run.
 {
     short sliceSize = 0;
     int samplesWritten = 0;
     static float overlap[SLICE_OVERLAP];
 
     sliceSize = reportOverlap(slice, overlap);
-
-    while (sliceSize != SLICE_SIZE) // read #samplesRead from buffer
+    
+    while (sliceSize != SLICE_SIZE) //the firt and the second iterations of the loop always take less time  than the rest. This means that when data are available, the operations are much faster and don't require to wait for the microphone
     {
         if (!*samplesRead)
             continue;
