@@ -1,16 +1,16 @@
 #include <Arduino.h>
 #include <WiFiNINA.h>
 #include <PDM.h>
+#include "melspectrogram.h"
 
 #include <ArduTFLite.h>
 #include "model.h" // here the model (jarvis 0.1.tflite) is compiled into a matrix, to be used by the interpreter to run inference. To see how the model was obtained, check the notebooks! 
 #include "hcData.h"
 
 #define SAMPLE_RATE 8000
-#define SPECTROGRAM_ROWS 64
-#define SPECTROGRAM_COLS 16
 
-#define FEATURE FTuk037 //choose the desired feature from hcData.h here
+#define FEATURE FTj1_097 //choose the desired feature from hcData.h here
+#define AUDIO RDj097
 
 void timeAndPredict()
 {
@@ -49,7 +49,20 @@ void setup()
     Serial.println("Model initialization failed!");
     while (true)
       ;
-  } 
+  }
+
+  // Obtain the spectrogram from the data
+  float spectrogram[SPECTROGRAM_ROWS][SPECTROGRAM_COLS];
+  computeFFT(AUDIO, spectrogram);
+  for (int i = 0; i < SPECTROGRAM_ROWS; i++)
+  {
+    for (int j = 0; j < SPECTROGRAM_COLS; j++)
+    {
+      Serial.print(spectrogram[i][j]);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
 
   //Place all input data inside the input tensor of the model, using the helper function
   int counter = 0;
