@@ -7,10 +7,10 @@
 #include "model.h" // here the model (jarvis 0.1.tflite) is compiled into a matrix, to be used by the interpreter to run inference. To see how the model was obtained, check the notebooks! 
 #include "hcData.h"
 
-#define SAMPLE_RATE 8000
-
 #define FEATURE FTj1_097 //choose the desired feature from hcData.h here
 #define AUDIO RDj097
+
+float melFilterBanks[SPECTROGRAM_ROWS][FFT_SIZE / 2 + 1];
 
 void timeAndPredict()
 {
@@ -52,13 +52,14 @@ void setup()
   }
 
   // Obtain the spectrogram from the data
-  float spectrogram[SPECTROGRAM_ROWS][SPECTROGRAM_COLS];
-  computeFFT(AUDIO, spectrogram);
+  float melspectrogram[SPECTROGRAM_ROWS][SPECTROGRAM_COLS];
+  computeFilterBanks(melFilterBanks);
+  computeFFT(AUDIO, melspectrogram, melFilterBanks);
   for (int i = 0; i < SPECTROGRAM_ROWS; i++)
   {
     for (int j = 0; j < SPECTROGRAM_COLS; j++)
     {
-      Serial.print(spectrogram[i][j]);
+      Serial.print(melspectrogram[i][j]);
       Serial.print(" ");
     }
     Serial.println();
@@ -70,7 +71,7 @@ void setup()
   {
     for (int j = 0; j < 16; j++)
     {
-      modelSetInput(FEATURE[i][j], counter++); //the input matrix is flattened to a 1D, 64*16 array
+      modelSetInput(melspectrogram[i][j], counter++); //the input matrix is flattened to a 1D, 64*16 array
     }
   }
 
