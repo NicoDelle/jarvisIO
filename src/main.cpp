@@ -1,16 +1,13 @@
 #include <Arduino.h>
 #include <WiFiNINA.h>
 #include <PDM.h>
-#include "melspectrogram.h"
 
 #include <ArduTFLite.h>
-#include "model.h" // here the model (jarvis 0.1.tflite) is compiled into a matrix, to be used by the interpreter to run inference. To see how the model was obtained, check the notebooks! 
+#include "jarvis025.h" // here the model (jarvis 0.1.tflite) is compiled into a matrix, to be used by the interpreter to run inference. To see how the model was obtained, check the notebooks! 
 #include "hcData.h"
 
-#define FEATURE FTj1_097 //choose the desired feature from hcData.h here
-#define AUDIO RDj097
+#define DATA RDj097
 
-float melFilterBanks[SPECTROGRAM_ROWS][FFT_SIZE / 2 + 1];
 
 void timeAndPredict()
 {
@@ -32,7 +29,7 @@ void timeAndPredict()
 }
 
 //define an area inside memory for the model to perform undisutrbed operations in
-constexpr int kTensorArenaSize = 16 * 1024;
+constexpr int kTensorArenaSize = 70000;
 alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
 //all code to be executed once goes here
@@ -44,35 +41,17 @@ void setup()
     ;
 
   Serial.println("Initializing TensorFlow Lite Micro Interpreter...");
-  if (!modelInit(jarvis0_1_tflite, tensor_arena, kTensorArenaSize))
+  if (!modelInit(utils_models_jarvis0_2_5_tflite, tensor_arena, kTensorArenaSize))
   {
     Serial.println("Model initialization failed!");
     while (true)
       ;
   }
 
-  // Obtain the spectrogram from the data
-  float melspectrogram[SPECTROGRAM_ROWS][SPECTROGRAM_COLS];
-  computeFilterBanks(melFilterBanks);
-  computeFFT(AUDIO, melspectrogram, melFilterBanks);
-  for (int i = 0; i < SPECTROGRAM_ROWS; i++)
-  {
-    for (int j = 0; j < SPECTROGRAM_COLS; j++)
-    {
-      Serial.print(melspectrogram[i][j]);
-      Serial.print(" ");
-    }
-    Serial.println();
-  }
-
   //Place all input data inside the input tensor of the model, using the helper function
-  int counter = 0;
-  for (int i = 0; i < 64; i++)
+  for (int i = 0; i < 8000; i++)
   {
-    for (int j = 0; j < 16; j++)
-    {
-      modelSetInput(melspectrogram[i][j], counter++); //the input matrix is flattened to a 1D, 64*16 array
-    }
+      modelSetInput(DATA[i], i); //the input matrix is flattened to a 1D, 64*16 array
   }
 
   Serial.println("Model initialization done.");
