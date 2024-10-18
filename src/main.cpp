@@ -1,39 +1,41 @@
 #include <Arduino.h>
 #include <WiFiNINA.h>
 #include <PDM.h>
-#include "melspectrogram.h"
 
+#include "audioProvider.h"
+
+/**
 #include <ArduTFLite.h>
-#include "model.h" // here the model (jarvis 0.1.tflite) is compiled into a matrix, to be used by the interpreter to run inference. To see how the model was obtained, check the notebooks! 
-#include "hcData.h"
+#include "jarvis026.h" 
+*constexpr int kTensorArenaSize = 70000;
+*alignas(16) uint8_t tensor_arena[kTensorArenaSize];
+*float data[SR];
 
-#define SAMPLE_RATE 8000
-
-#define FEATURE FTj1_097 //choose the desired feature from hcData.h here
-#define AUDIO RDj097
-
-void timeAndPredict()
+float runInference(float data[SR])
 {
-  int t0 = millis();
-  if (!modelRunInference())
+  for (int i = 0; i < SR; i++)
   {
-    Serial.println("RunInference Failed!");
-    return;
+      modelSetInput(data[i], i); //the input matrix is flattened to a 1D, 64*16 array
   }
-
-  // Run inference on the given data
-  float y = modelGetOutput(0);
-  int t1 = millis();
-  Serial.print("Output: ");
-  Serial.println(y);
-  Serial.print("Time taken: ");
-  Serial.print(t1 - t0);
-  Serial.println(" ms");
+  modelRunInference();
+  return modelGetOutput(0);
 }
+*/
 
-//define an area inside memory for the model to perform undisutrbed operations in
-constexpr int kTensorArenaSize = 16 * 1024;
-alignas(16) uint8_t tensor_arena[kTensorArenaSize];
+int buttonPin = 2;
+char ssid[6] = "delle";
+char pass[12] = "Iusearchbtw";
+char servername[] = "192.168.15.2";
+int serverport = 2023;
+WiFiClient client;
+
+//sends all data in the given buffer to the configured destination
+void sendData(WiFiClient& client, AudioProvider& audioProvider)
+{
+
+  // Print a sample on serial
+  client.write((uint8_t*) audioProvider.audio, sizeof(float) * SR);
+}
 
 //all code to be executed once goes here
 void setup()
@@ -43,44 +45,46 @@ void setup()
   while (!Serial)
     ;
 
+  /**
   Serial.println("Initializing TensorFlow Lite Micro Interpreter...");
-  if (!modelInit(jarvis0_1_tflite, tensor_arena, kTensorArenaSize))
+  if (!modelInit(utils_models_jarvis0_2_6_tflite, tensor_arena, kTensorArenaSize))
   {
     Serial.println("Model initialization failed!");
     while (true)
       ;
   }
-
-  // Obtain the spectrogram from the data
-  float spectrogram[SPECTROGRAM_ROWS][SPECTROGRAM_COLS];
-  computeFFT(AUDIO, spectrogram);
-  for (int i = 0; i < SPECTROGRAM_ROWS; i++)
+  Serial.println("Model initialized!");
+  */
+  //PDM setup
+  if (!PDMsetup())
   {
-    for (int j = 0; j < SPECTROGRAM_COLS; j++)
-    {
-      Serial.print(spectrogram[i][j]);
-      Serial.print(" ");
-    }
-    Serial.println();
+    while (1) {};
   }
-
-  //Place all input data inside the input tensor of the model, using the helper function
-  int counter = 0;
-  for (int i = 0; i < 64; i++)
+  //WiFI setup
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED)
   {
-    for (int j = 0; j < 16; j++)
-    {
-      modelSetInput(FEATURE[i][j], counter++); //the input matrix is flattened to a 1D, 64*16 array
-    }
+    delay(500);
+    Serial.println("Connecting to WiFi..");
   }
+  if (client.connect(servername, serverport)) {
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
 
-  Serial.println("Model initialization done.");
+    Serial.println("Setup finished!");
+    AudioProvider audioProvider;
+    sendData(client, audioProvider);
+  } else {
+    Serial.println("Connection to server failed!");
+  }
 }
 
 void loop()
 {
-  timeAndPredict();
-  while (1 == 1)
-  {
-  }
+
+  //basta copiare i dati in ordine da un buffer a un array. Probabilmente conviene poi shiftarli e ripiazzare quelli nuovi in coda, ma dipende dai tempi di esecuzione del modello
+
+  
+  //runInference(DATA);
+  return;
 }

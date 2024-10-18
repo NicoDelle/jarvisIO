@@ -13,3 +13,6 @@ sendData.cpp
 test
 include
 .vscode
+
+output.wav
+debug.log
