@@ -4,7 +4,7 @@
 class AudioProvider
 {
 public:
-    AudioProvider(); //constructor
+    void init(); //constructor
 
     //attributes
     float audio[SR];

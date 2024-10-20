@@ -27,7 +27,7 @@ int PDMsetup()
     return 1;
 }
 
-AudioProvider::AudioProvider()
+void AudioProvider::init()
 {
     int totalRead = 0;
     int nextTotalRead;
