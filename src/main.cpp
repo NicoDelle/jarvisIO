@@ -3,9 +3,13 @@
 #include <PDM.h>
 
 #include "audioProvider.h"
+#include "config.h"
 
 /**
-#include <ArduTFLite.h>
+#include <ArduTFLite.h>const char* ssid = "YOUR_SSID";
+const char* pass = "YOUR_PASSWORD";
+const char* servername = "YOUR_SERVERNAME";
+const int serverport = 2023;
 #include "jarvis026.h" 
 *constexpr int kTensorArenaSize = 70000;
 *alignas(16) uint8_t tensor_arena[kTensorArenaSize];
@@ -22,11 +26,10 @@ float runInference(float data[SR])
 }
 */
 
+AudioProvider audioProvider;
+
 int buttonPin = 2;
-char ssid[6] = "delle";
-char pass[12] = "Iusearchbtw";
-char servername[] = "192.168.15.2";
-int serverport = 2023;
+
 WiFiClient client;
 
 //sends all data in the given buffer to the configured destination
@@ -72,7 +75,13 @@ void setup()
     Serial.println(WiFi.localIP());
 
     Serial.println("Setup finished!");
-    AudioProvider audioProvider;
+    Serial.println("Starting in:");
+    for (int i = 0; i < 3; i++)
+    {
+      Serial.println(3 - i);
+      delay(1000);
+    }
+    audioProvider.init();
     sendData(client, audioProvider);
   } else {
     Serial.println("Connection to server failed!");
