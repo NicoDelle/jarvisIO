@@ -18,3 +18,5 @@ output.wav
 debug.log
 
 src/config.h
+
+.idea
