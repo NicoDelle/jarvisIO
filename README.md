@@ -11,3 +11,6 @@ Make sure to install the dependencies shown in the "platformio.ini" file
 ## Structure of the project
 The main file is located in the src folder, whit some auxiliary headers. Other functions are defined in separate folders inside the lib directory
 The utils folders contains some code related to this project, showing how to implement different useful things.
+
+## Current state of developement
+The code provided right now is a valid proof of concept: once uploaded to the arduino, it starts recording when a button connected to DP02 is pressed. An array representing 1 second of audio is produced and passed to the model, that has shown a promising accuracy during developement, cloud testing and on-board testing.
