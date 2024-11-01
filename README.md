@@ -14,3 +14,6 @@ The utils folders contains some code related to this project, showing how to imp
 
 ## Current state of developement
 The code provided right now is a valid proof of concept: once uploaded to the arduino, it starts recording when a button connected to DP02 is pressed. An array representing 1 second of audio is produced and passed to the model, that has shown a promising accuracy during developement, cloud testing and on-board testing.
+
+### What to do next?
+Now it's time to make this project perfectly functional. The fisrt thing to do is achieving real time analysis, running inference at least once a second
