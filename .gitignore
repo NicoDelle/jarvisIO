@@ -16,3 +16,8 @@ include
 
 output.wav
 debug.log
+
+src/config.h
+
+.idea
+EXmain.cpp

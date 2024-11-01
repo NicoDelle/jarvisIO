@@ -1,90 +1,112 @@
 #include <Arduino.h>
 #include <WiFiNINA.h>
 #include <PDM.h>
-
-#include "audioProvider.h"
-
-/**
 #include <ArduTFLite.h>
-#include "jarvis026.h" 
-*constexpr int kTensorArenaSize = 70000;
-*alignas(16) uint8_t tensor_arena[kTensorArenaSize];
-*float data[SR];
+#include "jarvis026.h"
 
-float runInference(float data[SR])
+#define SR 8000
+#define BUFFER_LENGTH 2048
+
+int buttonPin = 2;   // Digital pin 2
+int buttonState = 0; // Variable to store the button state
+int recording = 0;
+
+short sampleBuffer[BUFFER_LENGTH];
+volatile int samplesRead = 0;
+static const char channels = 1;
+int totalSamplesRead = 0;
+
+short audio[SR];
+
+void onPDMdata()
 {
-  for (int i = 0; i < SR; i++)
+  int bytesAvailable = PDM.available();
+  PDM.read(sampleBuffer, bytesAvailable);
+  samplesRead = bytesAvailable / 2;
+  totalSamplesRead += samplesRead;
+}
+
+int PDMsetup()
+{
+  Serial.println("Setting up PDM...");
+  PDM.onReceive(onPDMdata);
+  if (!PDM.begin(channels, SR))
   {
-      modelSetInput(data[i], i); //the input matrix is flattened to a 1D, 64*16 array
+    return 0;
   }
-  modelRunInference();
-  return modelGetOutput(0);
-}
-*/
 
-int buttonPin = 2;
-char ssid[6] = "delle";
-char pass[12] = "Iusearchbtw";
-char servername[] = "192.168.15.2";
-int serverport = 2023;
-WiFiClient client;
-
-//sends all data in the given buffer to the configured destination
-void sendData(WiFiClient& client, AudioProvider& audioProvider)
-{
-
-  // Print a sample on serial
-  client.write((uint8_t*) audioProvider.audio, sizeof(float) * SR);
+  Serial.println("Recording started!");
+  return 1;
 }
 
-//all code to be executed once goes here
+constexpr int kTensorArenaSize = 70000;
+alignas(16) uint8_t tensor_arena[kTensorArenaSize];
+
+void runInference() {
+    modelRunInference();
+    int pred = modelGetOutput(0);
+
+    Serial.print("Prediction: ");
+    Serial.println(pred);
+}
+
 void setup()
 {
-  // Initialize serial communications and wait for Serial Monitor to be opened
+  // Initialize serial communications at 9600 baud rate
   Serial.begin(9600);
   while (!Serial)
-    ;
+    ; // Wait for the serial port to connect
 
-  /**
+  // Set the button pin as an input with an internal pull-up resistor
+  pinMode(buttonPin, INPUT_PULLUP);
   Serial.println("Initializing TensorFlow Lite Micro Interpreter...");
-  if (!modelInit(utils_models_jarvis0_2_6_tflite, tensor_arena, kTensorArenaSize))
-  {
-    Serial.println("Model initialization failed!");
-    while (true)
-      ;
-  }
-  Serial.println("Model initialized!");
-  */
-  //PDM setup
-  if (!PDMsetup())
-  {
-    while (1) {};
-  }
-  //WiFI setup
-  WiFi.begin(ssid, pass);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.println("Connecting to WiFi..");
-  }
-  if (client.connect(servername, serverport)) {
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-
-    Serial.println("Setup finished!");
-    AudioProvider audioProvider;
-    sendData(client, audioProvider);
-  } else {
-    Serial.println("Connection to server failed!");
-  }
+    if (!modelInit(utils_models_jarvis0_2_6_tflite, tensor_arena, kTensorArenaSize)) {
+        Serial.println("Model initialization failed!");
+        while (true);
+    }
+    Serial.println("Model initialized!");
 }
 
 void loop()
 {
+  // Read the state of the button
+  buttonState = digitalRead(buttonPin);
 
-  //basta copiare i dati in ordine da un buffer a un array. Probabilmente conviene poi shiftarli e ripiazzare quelli nuovi in coda, ma dipende dai tempi di esecuzione del modello
+  // Print the button state to the Serial Monitor
+  if (buttonState == LOW)
+  {
+    PDMsetup();
+    recording = 1;
+  }
 
-  
-  //runInference(DATA);
-  return;
+  int limit;
+  int index = 0; // Add an index variable
+  short tempVal;
+  while (recording)
+  {
+    if (!samplesRead) continue;
+
+    limit = samplesRead;
+    samplesRead = 0;
+    for (int i = 0; i < limit; i++)
+    { 
+      tempVal = sampleBuffer[i];
+      audio[index] = tempVal; // Use index to access the array
+      modelSetInput(tempVal, index);
+      index++;
+    }
+
+    if (totalSamplesRead >= SR)
+    {
+      PDM.end();
+      recording = 0;
+      for (int i : audio)
+      {
+        Serial.print(i);
+        Serial.print(", ");
+      }
+
+      runInference();
+    }
+  }
 }
