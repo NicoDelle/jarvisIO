@@ -2,9 +2,7 @@
 This project aims to realize the activation command for a virtual assistant named Jarvis.
 The software is designed and tested for the Arduino RP2040 Connect board, and uses an implementation of the TensorFlowLite library
 
-More informations about the model design can be found at <a href='https://colab.research.google.com/drive/1T4DUBaDO2eZGwK2yVVtz14g87teJgTwV?usp=sharing'>this</a>  (for the general workflow idea) and <a href='https://colab.research.google.com/drive/1Ihl9pvpRumX6IvtbPXtNWEnzJjm92hOk?usp=sharing'>this</a> (for the structure of the model currently in developement)
-
-## Software used
+More informations about the model design can be found at <a href='https://colab.research.google.com/drive/1Ihl9pvpRumX6IvtbPXtNWEnzJjm92hOk?usp=sharing'>this</a> colab
 This project is developed using the VSCode extension for PlatformIO: to work on this project, you will have to install it and then clone the repo.
 Make sure to install the dependencies shown in the "platformio.ini" file
 
@@ -13,7 +11,4 @@ The main file is located in the src folder, whit some auxiliary headers. Other f
 The utils folders contains some code related to this project, showing how to implement different useful things.
 
 ## Current state of developement
-The code provided right now is a valid proof of concept: once uploaded to the arduino, it starts recording when a button connected to DP02 is pressed. An array representing 1 second of audio is produced and passed to the model, that has shown a promising accuracy during developement, cloud testing and on-board testing.
-
-### What to do next?
-Now it's time to make this project perfectly functional. The fisrt thing to do is achieving real time analysis, running inference at least once a second
+It's time to insert the model and write a feature provider
