@@ -9,7 +9,6 @@
 
 bool modelInit(const unsigned char* model, byte* tensorArena, int tensorArenaSize);
 
-//input dims: (1,32,21)
 /**
  * @brief Sets the input in place. Input dimensions: `(1, 32, 21)`
  *
