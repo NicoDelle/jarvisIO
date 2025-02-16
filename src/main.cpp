@@ -55,8 +55,15 @@ void setup()
   }
   Serial.println("Model initialized!");
 
+  //Need to extract features appropriately... how to implement the mel spectrogram?
+
   modelSetInput(melSpectrogram);
+  int t0 = millis();
   modelRunInference();
+  int t1 = millis();
+
+  Serial.print("Inference time: ");
+  Serial.println(t1-t0);
   modelGetOutput();
 }
 

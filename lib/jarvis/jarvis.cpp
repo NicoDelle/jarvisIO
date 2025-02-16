@@ -6,7 +6,7 @@ tflite::MicroInterpreter *tflInterpreter = nullptr;
 TfLiteTensor *tflInputTensor = nullptr;
 TfLiteTensor *tflOutputTensor = nullptr;
 
-const char *getTensorTypeName(TfLiteType type)
+const char *__getTensorTypeName(TfLiteType type)
 {
   switch (type)
   {
@@ -58,16 +58,13 @@ bool modelInit(const unsigned char *model, byte *tensorArena, int tensorArenaSiz
 
 bool modelSetInput(float melspectrogram[ROWS][COLS])
 {
-  if (tflInputTensor == nullptr)
-  {
-    return 0;
-  }
+  if (tflInputTensor == nullptr) return 0;
 
-  float inputBuffer[32 * 21];
+  float inputBuffer[ROWS * COLS];
   int index = 0;
-  for (int i = 0; i < 32; ++i)
+  for (int i = 0; i < ROWS; ++i)
   {
-    for (int j = 0; j < 21; ++j)
+    for (int j = 0; j < COLS; ++j)
     {
       inputBuffer[index++] = static_cast<float>(melspectrogram[i][j]);
     }
