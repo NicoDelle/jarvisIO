@@ -18,7 +18,7 @@ float vImag[N_FFT] = {0};
 float vReal[N_FFT];
 ArduinoFFT<float> FFT(vReal, vImag, N_FFT, SAMPLE_RATE);
 
-float* frame(float *audio, float *buffer, float *end)
+short* frame(short *audio, float *buffer, short *end)
 {
     for (int i = 0; i < N_FFT; i++)
     {
@@ -35,13 +35,13 @@ float* frame(float *audio, float *buffer, float *end)
     return audio + HOP_LENGTH;
 }
 
-void extractPowerSpectrum(float *audio, float powerSpectrum[SAMPLE_RATE / HOP_LENGTH + 1][N_FFT/2 + 1])
+void extractPowerSpectrum(short *audio, float powerSpectrum[SAMPLE_RATE / HOP_LENGTH + 1][N_FFT/2 + 1])
 {
-    float *audioTrace = audio;
-    float *end = audio + SAMPLE_RATE;
+    short *audioTrace = audio;
+    short *end = audio + SAMPLE_RATE;
     
     int count = 0;
-    while (audioTrace < end && count < SAMPLE_RATE / HOP_LENGTH + 1)
+    while (audioTrace < end && count < NUM_FRAMES)
     {
         audioTrace = frame(audioTrace, vReal, end);
         FFT.windowing(vReal, N_FFT, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
@@ -122,7 +122,7 @@ void createMelFilterbank(float filterbank[N_MELS][N_FFT/2 + 1]) {
     }
 }
 
-void extractMelEnergies(float *audio, float melEnergies[N_MELS][NUM_FRAMES], float melFilterbank[N_MELS][N_FFT/2 +1])
+void extractMelEnergies(short *audio, float melEnergies[N_MELS][NUM_FRAMES], const float melFilterbank[N_MELS][N_FFT/2 +1])
 {
     float powerSpectrum[NUM_FRAMES][N_FFT/2 + 1];
     extractPowerSpectrum(audio, powerSpectrum);
@@ -177,7 +177,7 @@ void powerTodB(float melspectrogram[N_MELS][NUM_FRAMES]) {
     }
 }
 
-void melspectrogram(float *audio, float melspectrogram[N_MELS][NUM_FRAMES], float melFilterbank[N_MELS][N_FFT/2 +1])
+void melspectrogram(short *audio, float melspectrogram[N_MELS][NUM_FRAMES], const float melFilterbank[N_MELS][N_FFT/2 +1])
 {
     extractMelEnergies(audio, melspectrogram, melFilterbank);
     powerTodB(melspectrogram);
