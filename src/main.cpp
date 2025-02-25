@@ -46,6 +46,25 @@ float melSpectrogram[ROWS][COLS] = {{-7.62939453125e-06, -17.63501739501953, -20
 constexpr int kTensorArenaSize = 70000;
 alignas(16) uint8_t tensorArena[kTensorArenaSize];
 
+void printSpectrogram(float melspectrogramDst[N_MELS][NUM_FRAMES])
+{
+  Serial.println("melspectrogramDst = np.array([");
+  for (int i = 0; i < N_MELS; i++) {
+    Serial.print("[");
+    for (int j = 0; j < NUM_FRAMES; j++) {
+      Serial.print(melspectrogramDst[i][j]);
+      if (j < NUM_FRAMES - 1) {
+        Serial.print(", ");
+      }
+    }
+    Serial.print("]");
+    if (i < N_MELS - 1) {
+      Serial.println(",");
+    }
+  }
+  Serial.println("])");
+}
+
 void setup()
 {
   // Initialize serial communications at 9600 baud rate
@@ -62,17 +81,14 @@ void setup()
 
   //Need to extract features appropriately... how to implement the mel spectrogram?
 
-  float melspectrogramDst[SAMPLE_RATE / HOP_LENGTH + 1][N_MELS] = {0};
-  melspectrogram(test, melspectrogramDst);
-  for (int i = 0; i < SAMPLE_RATE / HOP_LENGTH +1; i++)
-  {
-    for (int j = 0; j < N_MELS; j++)
-    {
-      Serial.print(melspectrogramDst[i][j], 3);
-      Serial.print(", ");
-    }
-    Serial.println();
-  }
+  float melspectrogramDst[N_MELS][NUM_FRAMES] = {0};
+  float melFilterBank[N_MELS][N_FFT/2 +1] = {0};
+  createMelFilterbank(melFilterBank);
+  melspectrogram(test, melspectrogramDst, melFilterBank);
+
+  modelSetInput(melspectrogramDst);
+  modelRunInference();
+  modelGetOutput();
 }
 
 void loop()
