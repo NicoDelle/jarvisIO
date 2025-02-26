@@ -11,4 +11,6 @@ The main file is located in the src folder, whit some auxiliary headers. Other f
 The utils folders contains some code related to this project, showing how to implement different useful things.
 
 ## Current state of developement
-It's time to insert the model and write a feature provider
+The model should now work properly. 
+The main task now is to reduce preprocessing time. At the moment, it takes around 730 ms, while inference takes < 20 ms. Optimizing preprocessing and making the code work real time should be the last things left for the voice activation part.
+The last thing to do should be set up an UDP (or TCP?) connection to stream the audio after the keyword is detected
