@@ -19,7 +19,7 @@ void onPDMdata()
   samplesRead = bytesAvailable / 2;
 }
 
-constexpr int kTensorArenaSize = 50000;
+constexpr int kTensorArenaSize = 32000;
 alignas(16) uint8_t tensorArena[kTensorArenaSize];
 
 static const float melFilterBank[N_MELS][N_FFT / 2 + 1] = {
@@ -130,6 +130,7 @@ void setup()
   }
 
   Serial.println("Audio registered successfully");
+  /** 
   Serial.println("audio = np.array([");
   for (int i = 0; i < SAMPLE_RATE; i++)
   {
@@ -144,16 +145,28 @@ void setup()
     }
   }
   Serial.println("])");
+  */
 
   float melspectrogramDst[N_MELS][NUM_FRAMES] = {0};
   
+  int t0 = millis();
   //createMelFilterbank(melFilterBank);
   melspectrogram(audio, melspectrogramDst, melFilterBank);
-  printSpectrogram(melspectrogramDst);
+  //printSpectrogram(melspectrogramDst);
+  int t1 = millis() -t0;
 
+  t0 = millis();
   modelSetInput(melspectrogramDst);
   modelRunInference();
+  int t2 = millis() - t0;
   modelGetOutput();
+
+  Serial.print("Audio prcessing time: ");
+  Serial.print(t1);
+  Serial.println(" ms");
+  Serial.print("Inference time: ");
+  Serial.print(t2);
+  Serial.println(" ms");
 }
 
 void loop()
