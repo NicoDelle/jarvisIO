@@ -3,12 +3,12 @@
 #include <WiFiNINA.h>
 
 #include "jarvis.h"
-#include "jarvis030.h"
+#include "jarvis045.h"
 
 #include "melspectrogram.h"
 
 static const char channels = 1;
-short sampleBuffer[512];
+short sampleBuffer[8000];
 volatile int samplesRead = 0;
 short audio[SAMPLE_RATE];
 
@@ -88,7 +88,7 @@ void setup()
     ; // Wait for the serial port to connect
 
   // Model setup
-  if (!modelInit(jarvis0_3_0_tflite, tensorArena, kTensorArenaSize))
+  if (!modelInit(jarvis0_4_5_tflite, tensorArena, kTensorArenaSize))
   {
     Serial.println("Failed to initialize the model!");
     while (1)
@@ -130,7 +130,6 @@ void setup()
   }
 
   Serial.println("Audio registered successfully");
-  /** 
   Serial.println("audio = np.array([");
   for (int i = 0; i < SAMPLE_RATE; i++)
   {
@@ -145,28 +144,16 @@ void setup()
     }
   }
   Serial.println("])");
-  */
 
   float melspectrogramDst[N_MELS][NUM_FRAMES] = {0};
   
-  int t0 = millis();
-  //createMelFilterbank(melFilterBank);
   melspectrogram(audio, melspectrogramDst, melFilterBank);
-  //printSpectrogram(melspectrogramDst);
-  int t1 = millis() -t0;
+  printSpectrogram(melspectrogramDst);
 
-  t0 = millis();
   modelSetInput(melspectrogramDst);
   modelRunInference();
-  int t2 = millis() - t0;
-  modelGetOutput();
-
-  Serial.print("Audio prcessing time: ");
-  Serial.print(t1);
-  Serial.println(" ms");
-  Serial.print("Inference time: ");
-  Serial.print(t2);
-  Serial.println(" ms");
+  float output = modelGetOutput();
+  Serial.println(output);
 }
 
 void loop()

@@ -94,8 +94,6 @@ float modelGetOutput()
   tflOutputTensor = tflInterpreter->output(0);
 
   float outputValue = tflOutputTensor->data.f[0];
-  Serial.print("Inference output: ");
-  Serial.println(outputValue);
 
   return outputValue;
 }
