@@ -3,7 +3,7 @@
 #include <WiFiNINA.h>
 
 #include "jarvis.h"
-#include "jarvis0410.h"
+#include "jarvis0411.h"
 
 #include "melspectrogram.h"
 
@@ -147,7 +147,7 @@ void setup()
         ; // Wait for the serial port to connect
 
     // Model setup
-    if (!modelInit(jarvis0_4_10_tflite, tensorArena, kTensorArenaSize))
+    if (!modelInit(jarvis0_4_11_tflite, tensorArena, kTensorArenaSize))
     {
         Serial.println("Failed to initialize the model!");
         while (1)
@@ -186,6 +186,8 @@ void loop()
     modelRunInference();
     float output = modelGetOutput();
     Serial.println(output);
+    if (output > 0.50)
+        printAudio();
     //if (count == 10 or count == 9)
     //{
     //    printAudio();
