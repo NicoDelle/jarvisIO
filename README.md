@@ -11,4 +11,5 @@ The main file is located in the src folder, whit some auxiliary headers. Other f
 The utils folders contains some code related to this project, showing how to implement different useful things.
 
 ## Current state of developement
-  The model should now work properly. The only missing part is the internet interface to properly send audio once the keyword is spoken
+  The model should now work properly. The only missing part is the internet interface to properly send audio once the keyword is spoken.
+  For the sake of learning, I will probably look into the extraction of the mel spectrogram to possibly make it more efficient. I will only do so after having completed my coursework in Numerical Methods 
